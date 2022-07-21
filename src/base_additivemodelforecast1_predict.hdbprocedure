@@ -1,0 +1,27 @@
+PROCEDURE base_additivemodelforecast1_predict(
+	--in lt_in_0_model_table table ("GROUP_ID" NVARCHAR(100), "ROW_INDEX" INT, "MODEL_CONTENT" NCLOB) 
+													)
+    LANGUAGE SQLSCRIPT
+    SQL SECURITY INVOKER
+    AS
+BEGIN
+
+DECLARE group_id NVARCHAR(100) ARRAY;
+DECLARE param_name VARCHAR(5000) ARRAY;
+DECLARE int_value INTEGER ARRAY;
+DECLARE double_value DOUBLE ARRAY;
+DECLARE string_value VARCHAR(5000) ARRAY;
+group_id[1] := N'1';
+param_name[1] := N'PLACE_HOLDER';
+int_value[1] := NULL;
+double_value[1] := NULL;
+string_value[1] := N'place_holder';
+params = UNNEST(:group_id, :param_name, :int_value, :double_value, :string_value);
+in_0 = SELECT "station_uuid", "date", "e5" FROM "PAL"."FUEL_PRICES_RNK_TEST";
+--in_1 = select * from :lt_in_0_model_table;
+in_1 = SELECT * from PAL_ADDITIVE_MODEL_ANALYSIS_MODEL;
+CALL _SYS_AFL.PAL_MASSIVE_ADDITIVE_MODEL_PREDICT(:in_0, :in_1, :params, out_0, out_1, out_2);
+CREATE COLUMN TABLE "PAL_ADDITIVE_MODEL_PREDICT_FORECAST_RESULT_TBL_1" AS (SELECT * FROM :out_0);
+CREATE COLUMN TABLE "PAL_ADDITIVE_MODEL_FORECAST_PREDICT_DECOMPOSITION_TBL_1" AS (SELECT * FROM :out_1);
+CREATE COLUMN TABLE "PAL_ADDITIVE_MODEL_FORECAST_PREDICT_ERROR_TBL_1" AS (SELECT * FROM :out_2);
+END
